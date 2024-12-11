@@ -20,7 +20,7 @@ export async function main(ns) {
   ns.resizeTail(600, 900);
 
   while (true) {
-    //profit = 0; // Reset profit for this cycle
+    profit = 0; // Reset profit for this cycle
     portfolioValue = 0; // Reset portfolio value for this cycle
     ns.clearLog(); // Clear the log for a fresh update
 
@@ -65,8 +65,8 @@ export async function main(ns) {
     var volPer = ns.stock.getVolatility(stock);
     var playerMoney = ns.getServerMoneyAvailable('home');
     var stockShares = ns.stock.getMaxShares(stock)
-    //var liquidFunds = 1e6;
-    var liquidFunds = portfolioValue * keepPercentage;
+    var liquidFunds = Math.floor((portfolioValue + playerMoney) * keepPercentage);
+    //var liquidFunds = portfolioValue * keepPercentage;
     var brokerFee = 100000;
     var transFees = liquidFunds + brokerFee;
 
@@ -76,9 +76,10 @@ export async function main(ns) {
         ns.stock.buyStock(stock, shares);
         profit -= ns.stock.getPurchaseCost(stock, minSharePer, "Long");
         previousTransactions[stock] = { price: askPrice, shares: (previousTransactions[stock]?.shares || 0) + shares };
-        recentBuys.unshift('Bought: ' + ns.formatNumber(shares, 3) +'/' +ns.formatNumber(stockShares,3)+ ' of ' + stock + ' for $' + ns.formatNumber(ns.stock.getPurchaseCost(stock, minSharePer, "Long"), 3));
-        if (recentBuys.length > 10) recentBuys.pop(); // Keep the recent buys array to 10 elements
       }
+      recentBuys.unshift('Bought: ' + ns.formatNumber(position[0], 3) + '/' + ns.formatNumber(stockShares, 3) + ' of ' + stock + ' for $' + ns.formatNumber(ns.stock.getPurchaseCost(stock, minSharePer, "Long"), 3));
+      if (recentBuys.length > 10) recentBuys.pop(); // Keep the recent buys array to 10 elements
+
     }
   }
 
@@ -96,7 +97,7 @@ export async function main(ns) {
       } else {
         profit += saleGain;
       }
-      recentSales.unshift('Sold: ' + ns.formatNumber(position[0], 3) +'/' +ns.formatNumber(ns.stock.getMaxShares(stock))+' of ' + stock + ' for $' + ns.formatNumber(saleGain, 3));
+      recentSales.unshift('Sold: ' + ns.formatNumber(position[0], 3) + '/' + ns.formatNumber(ns.stock.getMaxShares(stock)) + ' of ' + stock + ' for $' + ns.formatNumber(saleGain, 3));
       if (recentSales.length > 10) recentSales.pop(); // Keep the recent sales array to 10 elements
     }
   }
